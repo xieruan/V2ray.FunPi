@@ -1,0 +1,228 @@
+<div id="status_page" class="mdui-container">
+    <p></p>
+    <div class="mdui-row">
+        <div class="mdui-table-fluid">
+            <table class="mdui-table">
+                <thead>
+                <tr>
+                    <th colspan="2">运行状态</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>运行状态</td>
+                    <td>
+                        <div class="mdui-row">
+                            <div id="running" class="mdui-chip" style="display: none">
+                                <span class="mdui-chip-icon mdui-color-green"><i class="mdui-icon material-icons">play_arrow</i></span>
+                                <span class="mdui-chip-title">运行中</span>
+                            </div>
+                            <div id="stoped" class="mdui-chip" style="display: none">
+                                <span class="mdui-chip-icon mdui-color-red"><i class="mdui-icon material-icons">stop</i></span>
+                                <span class="mdui-chip-title">已停止</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>运行控制</td>
+                    <td>
+                        <div class="mdui-row">
+                            <div id="start_service" class="mdui-chip" onclick="start_service()" style="display: none">
+                                <span class="mdui-chip-icon mdui-color-green"><i class="mdui-icon material-icons">play_arrow</i></span>
+                                <span class="mdui-chip-title">启动</span>
+                            </div>
+                            <div id="stop_services" class="mdui-chip" onclick="stop_service()" style="display: none">
+                                <span class="mdui-chip-icon mdui-color-red"><i class="mdui-icon material-icons">stop</i></span>
+                                <span class="mdui-chip-title">停止</span>
+                            </div>
+                            <div id="restart_service" class="mdui-chip" onclick="restart_service()" style="display: none">
+                                <span class="mdui-chip-icon mdui-color-yellow-700"><i class="mdui-icon material-icons">settings_backup_restore</i></span>
+                                <span class="mdui-chip-title">重启</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>代理模式</td>
+                    <td>
+                        <div class="mdui-row">
+                            <div class="mdui-col-md-2">
+                                <select id="proxy_mode" class="mdui-select" mdui-select="{position: 'bottom'}">
+                                    <option value="0">直连</option>
+                                    <option value="1">智能分流</option>
+                                    <option value="2">全局代理</option>
+                                </select>
+                            </div>
+                            <div id="switch_mode" class="mdui-col-md-2" style="display: none">
+                                <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="switch_proxy_mode()">切换</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>当前版本</td>
+                    <td id="v2ray_current_ver"></td>
+                </tr>
+                <tr>
+                    <td>最新版本</td>
+                    <td>
+                        <div class="mdui-row">
+                            <div id="v2ray_new_ver" class="mdui-col-md-2 mdui-text-color-blue"></div>
+                            <div id="check_update" class="mdui-col-md-2">
+                                <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="check_v2ray_new_ver()">查询</button>
+                            </div>
+                            <div id="update" class="mdui-col-md-2" style="display: none">
+                                <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="update_v2ray()">升级</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="mdui-typo-caption-opacity">节点信息</td>
+                </tr>
+                <tr>
+                    <td>名称</td>
+                    <td id="remark"></td>
+                </tr>
+                <tr>
+                    <td>地址</td>
+                    <td id="host"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    //# sourceURL=status.js
+    $(document).ready(function () {
+        $("#proxy_mode").change(function () {
+            $("#switch_mode").show();
+        })
+
+        refresh()
+    });
+
+    function refresh() {
+        $.get("/get_status", function (data) {
+            if (data["running"]) {
+                $("#running").show();
+                $("#stoped").hide();
+                $("#start_service").hide();
+                $("#stop_services").show();
+                $("#restart_service").show();
+            }
+            else {
+                $("#running").show();
+                $("#stoped").hide();
+                $("#start_service").show();
+                $("#stop_services").hide();
+                $("#restart_service").hide();
+            }
+
+            mode = data["proxy_mode"];
+            $("#proxy_mode").prop("selectedIndex", mode);
+            $("#v2ray_current_ver").html(data["version"]);
+            $("#remark").html(data["ps"]);
+            $("#host").html(data["add"]);
+        });
+    }
+
+    function check_v2ray_new_ver() {
+        message("正在查询...");
+        $.get("/check_v2ray_new_ver").done(function (data) {
+            var new_version = data["version"];
+            $("#v2ray_new_ver").html(new_version)
+            var current_version = $("#v2ray_current_ver").html();
+            if (new_version === current_version) {
+                message("当前已是最新版本无需更新");
+            }
+            else {
+                message("已发布更新版本，如需升级请点击更新完成升级");
+                $("#check_update").hide();
+                $("#update").show();
+            }
+        }).fail(function () {
+            message("检查失败")
+        });
+    }
+
+    function update_v2ray() {
+        pop_toast("正在升级...");
+        $.get("/update_v2ray").done(function (data) {
+            if (check_result(data)) {
+                update_toast("升级成功")
+            }
+            else {
+                update_toast("升级失败")
+            }
+        }).always(function () {
+            close_toast();
+            refresh();
+        });
+    }
+
+    function start_service() {
+        pop_toast("正在启动...");
+        $.get("/start_service").done(function (data) {
+            if (check_result(data)) {
+                update_toast("启动成功")
+            }
+            else {
+                update_toast("启动失败")
+            }
+        }).always(function () {
+            close_toast();
+            refresh();
+        });
+    }
+
+    function stop_service() {
+        pop_toast("正在停止...");
+        $.get("/stop_service").done(function (data) {
+            if (check_result(data)) {
+                update_toast("停止成功")
+            }
+            else {
+                update_toast("停止失败")
+            }
+        }).always(function () {
+            close_toast();
+            refresh();
+        });
+    }
+
+    function restart_service() {
+        pop_toast("正在重启...");
+        $.get("/restart_service").done(function (data) {
+            if (check_result(data)) {
+                update_toast("重启成功")
+            }
+            else {
+                update_toast("重启失败")
+            }
+        }).always(function () {
+            close_toast();
+            refresh();
+        });
+    }
+
+    function switch_proxy_mode() {
+        pop_toast("正在切换代理模式...");
+        mode = $("#proxy_mode").prop('selectedIndex')
+        $.get("/switch_proxy_mode", { "mode": mode })
+            .done(function (data) {
+                if (check_result(data)) {
+                    update_toast("切换成功")
+                    $("#switch_mode").hide();
+                }
+                else {
+                    update_toast("切换失败")
+                }
+            }).always(function () {
+                close_toast();
+                refresh();
+            });
+    }
+</script>

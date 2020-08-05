@@ -1,0 +1,10 @@
+flask
+Flask-BasicAuth
+requests
+urllib3
+Jinja2
+requests
+six
+wheel
+pyOpenSSL
+tcp-latency

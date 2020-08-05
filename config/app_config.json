@@ -1,0 +1,8 @@
+{
+    "user": "admin",
+    "password": "admin",
+    "port": 1086,
+    "subscribe": "",
+    "last_subscribe": 0,
+    "proxy_mode": 1
+}

@@ -1,0 +1,59 @@
+<div class="mdui-container">
+    <p></p>
+    <div class="mdui-row">
+        <h5 class="mdui-table-fluid">
+            <table class="mdui-table">
+                <thead>
+                <tr>
+                    <th>
+                        <div class="mdui-row">
+                            运行日志 (实时刷新）
+                            <div class="mdui-progress">
+                                <div class="mdui-progress-indeterminate"></div>
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <div class="mdui-row">
+                            access.log
+                            <pre><code id="log-access-content" class="language-css"></code></pre>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="mdui-row">
+                            error.log
+                            <pre><code id="log-error-content" class="language-css"></code></pre>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    pre {
+        max-height: 200px;
+        overflow-x: auto;
+    }​
+</style>
+
+<script type="text/javascript">
+    //# sourceURL=log.js
+    $(document).ready(function () {
+        mdui.mutation();
+
+        setInterval(function () {
+            $('#log-access-content').load('/get_access_log');
+            $('#log-error-content').load('/get_error_log');
+        }, 500);
+    });
+
+</script>

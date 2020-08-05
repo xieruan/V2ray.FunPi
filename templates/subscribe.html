@@ -1,0 +1,257 @@
+<div class="mdui-container">
+    <p></p>
+    <div class="mdui-row">
+        <div class="mdui-table-fluid">
+            <table class="mdui-table">
+                <thead>
+                <tr>
+                    <th colspan="5">订阅配置</th>
+                </tr>
+                </thead>
+                <tbody id="subscribe_body">
+                <tr>
+                    <td>订阅网址</td>
+                    <td colspan="1">
+                        <div id="subscribe_url" class="mdui-col-xl-6"></div>
+                    </td>
+                    <td colspan="3">
+                        <div class="mdui-row">
+                            <div id="update_subscribe" class="mdui-col-md-2">
+                                <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="update_subscribe()">更新</button>
+                            </div>
+                            <div class="mdui-col-md-2">
+                                <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="set_subscribe()">订阅</button>
+                            </div>
+                            <div id="ping_test" class="mdui-col-md-2" style="display: none">
+                                <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="ping_test()">ping</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>最近订阅</td>
+                    <td id="last_subscribe" colspan="4"></td>
+                </tr>
+                <tr>
+                    <td class="mdui-typo-caption-opacity" colspan="6">节点列表</td>
+                </tr>
+                <tr class="mdui-typo-caption-opacity">
+                    <td>序号</td>
+                    <td>名称</td>
+                    <td>地址</td>
+                    <td>延迟</td>
+                    <td>操作</td>
+                </tr>
+                <tr id="node_template" style="display: none">
+                    <td class="node_index"></td>
+                    <td class="node_name"></td>
+                    <td class="node_addr"></td>
+                    <td class="node_delay"></td>
+                    <td>
+                        <div class="mdui-row">
+                            <div class="mdui-chip apply_node" >
+                                <span class="mdui-chip-icon mdui-color-light-green"><i class="mdui-icon material-icons">check</i></span>
+                                <span class="mdui-chip-title">应用</span>
+                            </div>
+                            <div class="mdui-chip get_node_link">
+                                <span class="mdui-chip-icon mdui-color-light-blue"><i class="mdui-icon material-icons">links</i></span>
+                                <span class="mdui-chip-title">链接</span>
+                            </div>
+                            <div class="mdui-chip get_node_qr">
+                                <span class="mdui-chip-icon mdui-color-black"><i class="mdui-icon material-icons">border_outer</i></span>
+                                <span class="mdui-chip-title">QR</span>
+                            </div>
+                            <div class="mdui-chip delete_node">
+                                <span class="mdui-chip-icon mdui-color-red-500"><i class="mdui-icon material-icons">delete</i></span>
+                                <span class="mdui-chip-title">删除</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="qr_toast" class="mdui-dialog">
+    <div class="mdui-dialog-content">
+        <div id="qr_code" style="width: fit-content"></div>
+    </div>
+</div>
+
+<script src="/static/js/qrcode.js"></script>
+<script src="/static/js/jquery.qrcode.js"></script>
+<script type="text/javascript">
+    //# sourceURL=subscribe.js
+    $(document).ready(function () {
+        mdui.mutation();
+        refresh();
+    });
+
+    function refresh() {
+        $.get("/get_status", function (status) {
+            $("#subscribe_url").html(status["subscribe"]);
+            $("#last_subscribe").html(status["last_subscribe"]);
+            if(!status["subscribe"]) {
+                $("#update_subscribe").hide();
+            }
+            else {
+                $("#update_subscribe").show();
+            }
+
+            $.get("/subscribe_list", function (subscribe) {
+                $("tr[id^='real_node']").remove();
+
+                node_running = status["ps"];
+                subscribe = subscribe["list"];
+                for(var i = 0; i < subscribe.length; i++) {
+                    item = subscribe[i]
+                    var node = $("#node_template").clone();
+                    node.attr("id", "real_node_" + (i + 1).toString());
+                    node.find(".node_index").html((i + 1).toString());
+                    node.find(".node_name").html(item["ps"]);
+                    node.find(".node_addr").html(item["add"]);
+                    if (item["ps"] === node_running) {
+                        node.find(".apply_node").find("i").html("vpn_key");
+                    }
+
+                    $("tbody").append(node);
+                    node.show();
+                }
+
+                $(".apply_node").click(function () {
+                    var node_index = parseInt($(this).closest("tr").find(".node_index").text()) - 1;
+                    apply_node(node_index);
+                });
+
+                $(".get_node_link").click(function () {
+                    var node_index = parseInt($(this).closest("tr").find(".node_index").text() - 1);
+                    get_node_link(node_index);
+                })
+
+                $(".get_node_qr").click(function () {
+                    var node_index = parseInt($(this).closest("tr").find(".node_index").text() - 1);
+                    get_node_qr(node_index);
+                })
+
+                $(".delete_node").click(function () {
+                    var node_index = parseInt($(this).closest("tr").find(".node_index").text() - 1);
+                    delete_node(node_index);
+                })
+
+                if (subscribe.length > 0) {
+                    $("#ping_test").show();
+                }
+            });
+        });
+    }
+    
+    function apply_node(index) {
+        pop_toast("正在应用节点...")
+        $.get("/apply_node", {node_index:index}).done(function (data) {
+            if (check_result(data)) {
+                update_toast("应用成功");
+            }
+            else {
+                update_toast("应用失败");
+            }
+        }).always(function () {
+            close_toast();
+            refresh();
+        });
+    }
+    
+    function get_node_link(index) {
+        $.get("/get_node_link", {node_index:index}).done(function (data) {
+            if (check_result(data)) {
+                link = data["node_link"];
+                copy_to_clipboard(link);
+                message("链接已复制到剪贴板");
+            }
+        })
+    }
+
+    function get_node_qr(index) {
+        $.get("/get_node_link", {node_index:index}).done(function (data) {
+            if (check_result(data)) {
+                link = data["node_link"];
+
+                $("#qr_code").empty().qrcode(link);
+                toast = new mdui.Dialog("#qr_toast", { destroyOnClosed:true });
+                toast.open();
+                mdui.mutation();
+            }
+        })
+    }
+
+    function delete_node(index) {
+        mdui.confirm("确认删除？", function () {
+            $.get("/delete_node", {node_index:index}).done(function (data) {
+                if (check_result(data)) {
+                    message("节点已删除");
+                    refresh();
+                }
+            })
+        });
+    }
+
+    function update_subscribe() {
+        pop_toast("正在更新订阅节点...")
+        $.get("/update_subscribe").done(function (data) {
+            if (check_result(data)) {
+                update_toast("更新成功");
+            }
+            else {
+                update_toast("更新失败");
+            }
+        }).always(function () {
+            close_toast();
+            refresh();
+        });
+    }
+
+    function set_subscribe() {
+        mdui.prompt("请输入订阅地址：", function (url) {
+            if (!url.length) {
+                return;
+            }
+            pop_toast("正在订阅新的节点列表...");
+            $.get("/set_subscribe", {subscribe:url}).done(function (data) {
+                if (check_result(data)) {
+                    update_toast("订阅成功");
+                }
+                else {
+                    update_toast("订阅失败");
+                }
+            }).always(function () {
+                close_toast();
+                refresh();
+            });
+        });
+    }
+
+    function ping_test() {
+        $.get("/subscribe_ping_all", function (data) {
+            list = data["list"];
+            $("tr[id^='real_node']").each(function (i, row) {
+                node_addr = $(row).find(".node_addr").text();
+                delay = list[node_addr];
+                var content = "";
+
+                td = $(row).find(".node_delay");
+                td.removeClass("mdui-text-color-red");
+                td.removeClass("mdui-text-color-green");
+                if (-1 === delay) {
+                    content = "☹";
+                    td.addClass("mdui-text-color-red");
+                }
+                else {
+                    content = String(delay) + " ms";
+                    td.addClass("mdui-text-color-green");
+                }
+                td.html(content);
+            })
+        });
+    }
+</script>
