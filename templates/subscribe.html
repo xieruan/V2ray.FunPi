@@ -12,17 +12,17 @@
                 <tr>
                     <td>订阅网址</td>
                     <td colspan="1">
-                        <div id="subscribe_url" class="mdui-col-xl-6"></div>
+                        <div id="subscribe_url"></div>
                     </td>
                     <td colspan="3">
                         <div class="mdui-row">
-                            <div id="update_subscribe" class="mdui-col-md-2">
+                            <div id="update_subscribe" class="mdui-col-sm-3">
                                 <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="update_subscribe()">更新</button>
                             </div>
-                            <div class="mdui-col-md-2">
+                            <div class="mdui-col-sm-3">
                                 <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="set_subscribe()">订阅</button>
                             </div>
-                            <div id="ping_test" class="mdui-col-md-2" style="display: none">
+                            <div id="ping_test" class="mdui-col-sm-3" style="display: none">
                                 <button class="mdui-btn mdui-btn-raised mdui-btn-dense mdui-color-theme-accent mdui-ripple" onclick="ping_test()">ping</button>
                             </div>
                         </div>
@@ -49,21 +49,17 @@
                     <td class="node_delay"></td>
                     <td>
                         <div class="mdui-row">
-                            <div class="mdui-chip apply_node" >
+                            <div class="mdui-chip apply_node" title="应用节点">
                                 <span class="mdui-chip-icon mdui-color-light-green"><i class="mdui-icon material-icons">check</i></span>
-                                <span class="mdui-chip-title">应用</span>
                             </div>
-                            <div class="mdui-chip get_node_link">
+                            <div class="mdui-chip get_node_link" title="拷贝链接">
                                 <span class="mdui-chip-icon mdui-color-light-blue"><i class="mdui-icon material-icons">links</i></span>
-                                <span class="mdui-chip-title">链接</span>
                             </div>
-                            <div class="mdui-chip get_node_qr">
+                            <div class="mdui-chip get_node_qr" title="获取二维码">
                                 <span class="mdui-chip-icon mdui-color-black"><i class="mdui-icon material-icons">border_outer</i></span>
-                                <span class="mdui-chip-title">QR</span>
                             </div>
-                            <div class="mdui-chip delete_node">
+                            <div class="mdui-chip delete_node" title="删除节点">
                                 <span class="mdui-chip-icon mdui-color-red-500"><i class="mdui-icon material-icons">delete</i></span>
-                                <span class="mdui-chip-title">删除</span>
                             </div>
                         </div>
                     </td>
