@@ -69,6 +69,18 @@
 </body>
 
 <script type="text/javascript">
+    var g_intervals = [];
+    function add_interval(i) {
+        g_intervals.push(i);
+    }
+
+    function clear_intervals() {
+        g_intervals.forEach(function (i) {
+            clearInterval(i);
+        })
+        g_intervals.length = 0;
+    }
+
     // toast
     var g_toast = null;
     function pop_toast(message) {
@@ -140,6 +152,8 @@
         }
 
         $(".mdui-list-item").click(function () {
+            clear_intervals();
+
             var id = $(this).attr("id");
             if (id in menus) {
                 var title = $(this).text();

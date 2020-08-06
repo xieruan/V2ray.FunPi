@@ -6,5 +6,5 @@ Jinja2
 requests
 six
 wheel
-pyOpenSSL
 tcp-latency
+psutil

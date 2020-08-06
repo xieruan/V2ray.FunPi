@@ -7,6 +7,7 @@ Desc:
 """
 from datetime import datetime
 import time
+import psutil
 
 from .app_config import AppConfig
 from .node_item import NodeItem
@@ -42,6 +43,25 @@ class CoreService:
 
         node = cls.node_config.dump()
         result.update(node)
+        return result
+
+    @classmethod
+    def performance(cls) -> dict:
+        result = {}
+        cpu_usage = psutil.cpu_percent(interval=0.2, percpu=True)
+        result_cpu = {}
+        core = 0
+        for u in cpu_usage:
+            core += 1
+            result_cpu["core {0}".format(core)] = u
+        result['cpu'] = result_cpu
+
+        memory_usage = psutil.virtual_memory()
+        result['memory'] = {
+            "percent" : memory_usage.percent,
+            "total" : int(memory_usage.total / (1024 * 1024)),
+            "used" : int((memory_usage.total - memory_usage.available) / (1024 * 1024))
+        }
         return result
 
     @classmethod

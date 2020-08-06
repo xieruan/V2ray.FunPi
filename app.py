@@ -68,6 +68,12 @@ def get_status_api():
     status.update({K.result: K.ok})
     return jsonify(status)
 
+@app.route('/get_performance')
+def get_performance_api():
+    performance = CoreService.performance()
+    performance.update({K.result: K.ok})
+    return jsonify(performance)
+
 @app.route('/check_v2ray_new_ver')
 def check_v2ray_new_ver_api():
     version = CoreService.v2ray.check_new_version()

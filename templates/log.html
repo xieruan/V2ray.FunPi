@@ -50,10 +50,11 @@
     $(document).ready(function () {
         mdui.mutation();
 
-        setInterval(function () {
+        var i = setInterval(function () {
             $('#log-access-content').load('/get_access_log');
             $('#log-error-content').load('/get_error_log');
         }, 500);
+        add_interval(i);
     });
 
 </script>
