@@ -49,7 +49,11 @@ class V2rayController:
         return version
 
     def update(self) -> bool:
-        update_log = subprocess.check_output("bash ./script/update_v2ray.sh", shell=True).decode('utf-8')
+        r = requests.get('https://api.github.com/repos/v2ray/v2ray-core/releases/latest')
+        r = r.json()
+        version = r['tag_name']
+
+        update_log = subprocess.check_output("bash ./script/update_v2ray.sh {0}".format(version), shell=True).decode('utf-8')
         ret = update_log.find('installed')
         if ret:
             ret = self.restart()
