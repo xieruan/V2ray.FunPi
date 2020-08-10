@@ -43,7 +43,7 @@ class V2rayController:
         return current_ver
 
     def check_new_version(self) -> str:
-        r = requests.get('https://api.github.com/repos/v2ray/v2ray-core/releases/latest')
+        r = requests.get('https://api.github.com/repos/v2fly/v2ray-core/releases/latest')
         r = r.json()
         version = r['tag_name']
         return version
