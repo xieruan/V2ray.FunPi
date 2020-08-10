@@ -258,6 +258,8 @@
             var current_version = $("#v2ray_current_ver").html();
             if (new_version === current_version) {
                 message("当前已是最新版本无需更新");
+                $("#check_update").show();
+                $("#update").hide();
             }
             else {
                 message("已发布更新版本，如需升级请点击更新完成升级");
@@ -281,6 +283,7 @@
         }).always(function () {
             close_toast();
             refresh();
+            check_v2ray_new_ver();
         });
     }
 
